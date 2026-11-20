@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#CFE8F3">
+<title>萧离 · 领养启事</title>
+<style>
+  /* ============ 冰川奶油蓝主题 ============ */
+  :root {
+    --bg-base: #CFE8F3; 
+    --ink: #5C7896;     
+    --sub: #7A97B6;     
+    --faint: #9DB7D6;   
+    --accent: #7A97B6;  
+    --accent-deep: #4D6A87; 
+    
+    /* 亮色星芒专用色 */
+    --star-light: #C4E0F5;
+    --star-mid: #A8CAE8;
+
+    /* 毛玻璃配置 */
+    --glass-bg: rgba(248, 250, 252, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.85);
+    --glass-shadow: 0 12px 36px -8px rgba(122, 151, 182, 0.15), 
+                    inset 0 1px 2px rgba(255, 255, 255, 1);
+    --dock-bg: rgba(207, 232, 243, 0.8);
+  }
+
+  /* 黑夜模式 */
+  [data-theme="dark"] {
+    --bg-base: #1B2530;
+    --ink: #CFE8F3;
+    --sub: #9DB7D6;
+    --faint: #7A97B6;
+    --accent: #9DB7D6;
+    --accent-deep: #CFE8F3;
+    
+    --star-light: #5C7896;
+    --star-mid: #7A97B6;
+
+    --glass-bg: rgba(30, 43, 58, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.6), 
+                    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    --dock-bg: rgba(27, 37, 48, 0.8);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    color: var(--ink);
+    font-family: "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
+    background-color: var(--bg-base);
+    transition: background-color .4s ease, color .4s ease;
+  }
+
+  /* 动态光影背景 */
+  .aurora-bg {
+    position: fixed; inset: 0; z-index: -2; overflow: hidden; transition: opacity .4s ease;
+  }
+  .aurora-bg::before, .aurora-bg::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(80px);
+    animation: floatBg 15s ease-in-out infinite alternate;
+  }
+  .aurora-bg::before {
+    width: 80vw; height: 80vw; left: -20vw; top: -10vh;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 60%);
+  }
+  .aurora-bg::after {
+    width: 70vw; height: 70vw; right: -20vw; bottom: -10vh;
+    background: radial-gradient(circle, rgba(157, 183, 214, 0.4) 0%, transparent 60%);
+    animation-delay: -5s;
+  }
+
+  .serif { font-family: "Songti SC", "STSong", "Noto Serif SC", serif; }
+
+  /* ============ 页面架构 ============ */
+  .stage { position: fixed; inset: 0; overflow: hidden; }
+  .page {
+    position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+    opacity: 0; visibility: hidden; filter: blur(12px); transform: scale(0.98) translateY(10px);
+    transition: opacity .7s cubic-bezier(.2,.8,.2,1), filter .7s ease, transform .7s cubic-bezier(.2,.8,.2,1);
+    z-index: 1;
+  }
+  .page::-webkit-scrollbar { display: none; }
+  .page.active { opacity: 1; visibility: visible; filter: blur(0); transform: scale(1) translateY(0); z-index: 2; }
+  
+  .page-inner {
+    width: 100%; max-width: 480px; margin: 0 auto;
+    padding: 74px 24px 140px; min-height: 100%;
+    display: flex; flex-direction: column;
+  }
+  .page-inner.center { justify-content: center; align-items: center; text-align: center; }
+
+  .bg-img {
+    position: fixed; inset: 0; z-index: -1;
+    background-size: cover; background-position: center;
+    opacity: 0.15; filter: blur(4px);
+  }
+
+  /* ============ 通用文字 ============ */
+  .kicker {
+    font-size: 10px; letter-spacing: .5em; text-indent: .5em; color: var(--accent-deep);
+    margin-bottom: 12px; text-transform: uppercase; font-weight: 600;
+  }
+  .title {
+    font-family: "Songti SC", serif; font-size: 26px; font-weight: 500;
+    letter-spacing: .16em; text-indent: .16em; color: var(--ink); margin-bottom: 6px;
+  }
+  .subtitle { font-size: 11.5px; letter-spacing: .2em; color: var(--faint); margin-bottom: 28px;}
+
+  /* ============ 毛玻璃卡片 ============ */
+  .glass-panel {
+    border-radius: 24px; border: 1px solid var(--glass-border);
+    background: var(--glass-bg); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+    padding: 24px 20px; box-shadow: var(--glass-shadow); margin-bottom: 20px;
+  }
+
+  /* ============ 封面 ============ */
+  .cover-title {
+    font-family: "Songti SC", serif; font-size: 34px; letter-spacing: .32em; text-indent: .32em; margin-bottom: 40px;
+  }
+  
+  /* 四角星装饰 (替换猫爪) */
+  .star-mark {
+    width: 64px; height: 64px; margin: 0 auto 46px; display: block;
+    animation: floaty 5s ease-in-out infinite;
+    filter: drop-shadow(0 8px 16px rgba(168, 202, 232, 0.4));
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+    50%      { transform: translateY(-8px) scale(1.05) rotate(10deg); }
+  }
+
+  .open-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 40px; border-radius: 999px;
+    border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    color: var(--accent-deep); font-family: inherit; font-size: 14px; letter-spacing: .3em; text-indent: .3em;
+    cursor: pointer; box-shadow: var(--glass-shadow); transition: all .3s ease;
+  }
+  .open-btn:active { transform: scale(.96); }
+
+  /* ============ 目录 (规整列表) ============ */
+  .toc-grid {
+    display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 10px;
+  }
+  .toc-item {
+    position: relative; display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-radius: 20px; width: 100%;
+    border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(30px); box-shadow: var(--glass-shadow);
+    text-decoration: none; color: var(--ink); transition: all .3s;
+  }
+  .toc-item:active { transform: scale(.98); }
+  
+  .toc-num { font-family: "Times New Roman", serif; font-size: 16px; color: var(--accent-deep); font-style: italic; opacity: 0.8; }
+  .toc-name { flex: 1; font-size: 15px; letter-spacing: .1em; font-weight: 500; padding: 0 16px; text-align: left;}
+  .toc-icon { font-size: 14px; color: var(--faint); }
+
+  /* ============ 关于我 (对称网格) ============ */
+  .profile-center { text-align: center; }
+  .avatar {
+    width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 16px;
+    overflow: hidden; border: 2px solid var(--glass-border);
+    box-shadow: 0 8px 24px -6px rgba(122, 151, 182, 0.3);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .profile-name { font-family: "Songti SC", serif; font-size: 28px; letter-spacing: .2em; text-indent: .2em; margin-bottom: 24px; }
+  
+  /* 对称信息网格 */
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    padding-top: 20px; border-top: 1px solid var(--glass-border); margin-bottom: 20px;
+  }
+  .info-box {
+    padding: 12px; border-radius: 12px; font-size: 13px; color: var(--ink);
+    background: rgba(255,255,255,0.3); border: 1px solid var(--glass-border);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .info-box span { font-size: 10px; color: var(--sub); letter-spacing: .1em; }
+  .info-box strong { font-weight: 600; color: var(--accent-deep); }
+  .info-box.full { grid-column: span 2; flex-direction: row; justify-content: center; gap: 8px; }
+
+  .signature {
+    padding: 16px 20px; border-radius: 16px;
+    background: rgba(207, 232, 243, 0.4); border-left: 3px solid var(--accent);
+    font-size: 13.5px; line-height: 1.9; color: var(--ink); text-align: left;
+  }
+
+  /* ============ 约会风格 ============ */
+  .style-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .style-header img { width: 20px; height: 20px; object-fit: contain; border-radius: 4px; }
+  .style-group { margin-bottom: 24px; }
+  .style-group h4 { font-size: 12px; letter-spacing: .2em; color: var(--faint); margin-bottom: 14px; font-weight: 500; }
+  .style-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    padding: 10px 18px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-bg);
+    color: var(--ink); font-family: inherit; font-size: 13px; letter-spacing: .1em;
+    cursor: pointer; transition: all .25s ease; box-shadow: 0 4px 10px -4px rgba(122,151,182,0.1);
+  }
+  .chip.tap { transform: scale(1.06); background: var(--accent-deep); color: #fff; border-color: transparent; }
+
+  /* ============ 价目表 ============ */
+  .price-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .price-header img { width: 24px; height: 24px; object-fit: contain; border-radius: 6px; }
+  .hero-price-simple { text-align: center; padding: 0 0 20px; }
+  .hps-line { display: flex; align-items: baseline; justify-content: center; gap: 8px; color: var(--ink); }
+  .hps-num { font-size: 44px; font-weight: 300; font-family: "DIN Alternate", "Helvetica Neue", sans-serif; line-height: 1;}
+  .hps-unit { font-size: 14px; color: var(--faint); font-weight: 400; }
+  .hps-divider { font-size: 20px; color: var(--faint); margin: 0 4px; opacity: 0.5;}
+
+  .fee-group { margin-top: 20px; }
+  .fee-title { font-size: 12px; letter-spacing: .2em; color: var(--faint); margin-bottom: 12px; font-weight: 500; padding-left: 6px; }
+  .fee-list-single { display: flex; flex-direction: column; gap: 10px; }
+  .fee-item-single {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-radius: 16px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    font-size: 14px; color: var(--sub); letter-spacing: .05em;
+  }
+  .fee-item-single b { color: var(--accent-deep); font-weight: 600; font-size: 16px; }
+
+  /* ============ 领养条件 ============ */
+  .rules-list { list-style: none; }
+  .rules-list li {
+    position: relative; padding-left: 20px; margin-bottom: 18px; font-size: 13.5px; line-height: 1.9; color: var(--sub);
+    opacity: 0; transform: translateY(10px); filter: blur(4px); transition: all .8s cubic-bezier(.2,.8,.2,1);
+  }
+  .rules-list li.show { opacity: 1; transform: translateY(0); filter: blur(0); }
+  .rules-list li:last-child { margin-bottom: 0; }
+  .rules-list li::before {
+    content: ""; position: absolute; left: 4px; top: 11px; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); opacity: 0.6;
+  }
+  
+  .rules-list li.highlight {
+    color: var(--accent-deep);
+    background: rgba(157, 183, 214, 0.15);
+    padding: 10px 14px 10px 24px;
+    border-radius: 8px;
+    margin-left: -10px;
+    font-weight: 500;
+  }
+  .rules-list li.highlight::before {
+    left: 10px; top: 18px; background: var(--accent-deep); opacity: 1;
+  }
+
+  .rules-foot {
+    margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--glass-border);
+    font-size: 12.5px; letter-spacing: .15em; color: var(--accent-deep); text-align: center;
+    opacity: 0; filter: blur(4px); transition: all .8s ease;
+  }
+  .rules-foot.show { opacity: 1; filter: blur(0); }
+
+  /* ============ 资料卡片 ============ */
+  .doc-card {
+    display: flex; gap: 16px; align-items: center; padding: 18px; border-radius: 20px;
+    border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(30px); box-shadow: var(--glass-shadow);
+    margin-bottom: 14px; text-decoration: none; color: inherit;
+    opacity: 0; transform: translateY(12px); filter: blur(4px);
+    transition: all .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .doc-card.show { opacity: 1; transform: translateY(0); filter: blur(0); }
+  .doc-card img { width: 52px; height: 52px; border-radius: 14px; object-fit: cover; flex-shrink: 0; }
+  .doc-card .doc-info { flex: 1; min-width: 0; }
+  .doc-card .doc-name { font-size: 14.5px; letter-spacing: .1em; margin-bottom: 6px; font-weight: 600;}
+  .doc-card .doc-desc { font-size: 11.5px; color: var(--faint); }
+  .doc-card .doc-link { flex-shrink: 0; font-size: 12px; color: var(--accent-deep); font-weight: 500; }
+
+  /* ============ 问卷 ============ */
+  .form-type { display: flex; gap: 10px; margin-bottom: 22px; }
+  .form-type button {
+    flex: 1; min-height: 46px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--glass-bg);
+    color: var(--sub); font-family: inherit; font-size: 13px; letter-spacing: .1em; cursor: pointer; transition: all .3s ease;
+  }
+  .form-type button.on { border-color: transparent; background: var(--accent-deep); color: #fff; box-shadow: 0 8px 20px -8px rgba(122,151,182,0.5); }
+  .field { display: block; margin-bottom: 20px; }
+  .field > span.flabel { display: block; font-size: 11.5px; letter-spacing: .2em; color: var(--faint); margin-bottom: 10px; }
+  .field input, .field textarea {
+    display: block; width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 14px 16px; color: var(--ink); font-family: inherit; font-size: 14px; line-height: 1.6;
+    outline: none; resize: none; transition: all .3s ease;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); box-shadow: 0 0 0 4px rgba(157,183,214,0.15); }
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+  .btn-solid {
+    display: block; width: 100%; min-height: 52px; border: none; border-radius: 16px;
+    background: var(--accent-deep); color: #fff; font-family: inherit;
+    font-size: 14px; letter-spacing: .25em; text-indent: .25em;
+    cursor: pointer; box-shadow: 0 10px 24px -10px rgba(122,151,182,0.7); transition: transform .2s ease;
+  }
+  .btn-solid:active { transform: scale(.98); }
+
+  /* ============ 尾页 (杂志排版) ============ */
+  .end-box { width: 100%; padding: 20px 0; text-align: left; padding-left: 10px; }
+  
+  .end-text-wrap {
+    position: relative; margin-bottom: 50px;
+    display: flex; flex-direction: column;
+  }
+  
+  /* 第一行 */
+  .end-row-1 {
+    display: flex; align-items: baseline; position: relative;
+  }
+  .end-small-1 { font-family: "Songti SC", serif; font-size: 26px; color: var(--ink); letter-spacing: 2px; z-index: 2; }
+  .end-big-1 { 
+    font-family: "Songti SC", serif; font-size: 50px; font-weight: 600; color: #1B2530; letter-spacing: 0px; 
+    margin-left: -5px; z-index: 2; position: relative;
+  }
+  [data-theme="dark"] .end-big-1 { color: #E2EDF5; }
+  
+  .end-en-1 {
+    font-family: "Times New Roman", serif; font-size: 14px; color: var(--faint); letter-spacing: 2px;
+    margin-top: 2px; margin-left: 5px; font-style: italic; position: relative; z-index: 2;
+  }
+  
+  /* 第二行 */
+  .end-row-2 {
+    display: flex; align-items: baseline; margin-top: 10px; position: relative;
+    padding-left: 15px; 
+  }
+  .end-big-2 { 
+    font-family: "Songti SC", serif; font-size: 56px; font-weight: 600; color: var(--ink); letter-spacing: 0px; 
+    z-index: 2; position: relative;
+  }
+  .end-small-2 { 
+    font-family: "Songti SC", serif; font-size: 24px; color: var(--sub); letter-spacing: 2px; 
+    margin-left: 10px; z-index: 2; position: relative;
+  }
+  
+  .end-en-2 {
+    font-family: "Times New Roman", serif; font-size: 14px; color: var(--faint); letter-spacing: 2px;
+    margin-top: 2px; text-align: right; width: 90%; font-style: italic; z-index: 2; position: relative;
+  }
+
+  /* 贯穿的细线装饰 */
+  .end-swoosh {
+    position: absolute; top: 40%; left: 10%; width: 110%; height: 40px;
+    z-index: 1; pointer-events: none; opacity: 0.3;
+  }
+  .end-swoosh path { stroke: var(--accent); }
+
+  .end-btn {
+    display: block; margin: 0 auto; padding: 14px 36px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(10px); color: var(--accent-deep); font-family: inherit; font-size: 13px; letter-spacing: .2em;
+    cursor: pointer; transition: all .3s ease; box-shadow: var(--glass-shadow);
+  }
+  .end-btn:active { transform: scale(.96); }
+
+  /* ============ 底部控制条 & 主题切换 ============ */
+  .dock {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--dock-bg) 50%, transparent);
+    backdrop-filter: blur(10px); pointer-events: none;
+  }
+  .dock > * { pointer-events: auto; }
+  .dock-reset { flex-shrink: 0; background: none; border: none; padding: 8px 4px; font-family: inherit; font-size: 11px; letter-spacing: .15em; color: var(--faint); cursor: pointer; }
+  .dots { flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .dot { width: 5px; height: 5px; padding: 0; border: none; border-radius: 3px; background: var(--faint); opacity: .5; cursor: pointer; transition: all .4s ease; }
+  .dot.on { width: 18px; background: var(--accent-deep); opacity: 1; }
+  .dock-next {
+    flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--glass-bg);
+    color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .3s ease;
+  }
+  .dock-next.hide { opacity: 0; pointer-events: none; }
+
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 50; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer;
+    transition: all .3s ease; box-shadow: var(--glass-shadow);
+  }
+  .theme-toggle:active { transform: scale(.9); }
+  .theme-toggle svg { width: 18px; height: 18px; fill: currentColor; }
+  .icon-sun { display: none; }
+  [data-theme="dark"] .icon-moon { display: none; }
+  [data-theme="dark"] .icon-sun { display: block; }
+
+  .toast {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.9);
+    padding: 14px 28px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--glass-bg);
+    backdrop-filter: blur(20px); color: var(--ink); font-size: 13px; opacity: 0; visibility: hidden;
+    pointer-events: none; transition: all .3s; box-shadow: var(--glass-shadow);
+  }
+  .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+
+  /* ============ 全屏四角星点击特效 ============ */
+  .click-star {
+    position: fixed; width: 50px; height: 50px; z-index: 999; pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg); opacity: 1; animation: starEffect .6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  @keyframes starEffect {
+    0% { transform: translate(-50%, -50%) scale(0.5) rotate(0deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.8) rotate(45deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora-bg"></div>
+
+<audio id="bgm" loop>
+  <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+
+<div class="theme-toggle" id="themeToggle" aria-label="切换模式">
+  <svg class="icon-moon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+  <svg class="icon-sun" viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM4 11a1 1 0 0 1 1 1 1 1 0 0 1-1 1H2a1 1 0 0 1 0-2h2zm18 0a1 1 0 0 1 1 1 1 1 0 0 1-1 1h-2a1 1 0 0 1 0-2h2zM5.6 3.5a1 1 0 0 1 1.4 1.4L5.6 6.3A1 1 0 0 1 4.2 4.9L5.6 3.5zm12.8 12.8a1 1 0 0 1 1.4 1.4l-1.4 1.4a1 1 0 0 1-1.4-1.4l1.4-1.4zM4.2 19.1a1 1 0 0 1 1.4-1.4l1.4 1.4a1 1 0 0 1-1.4 1.4l-1.4-1.4zm12.8-12.8a1 1 0 0 1 1.4-1.4l1.4 1.4a1 1 0 0 1-1.4 1.4l-1.4-1.4z"/></svg>
+</div>
+
+<div class="stage" id="stage">
+
+  <!-- 封面 -->
+  <section class="page active" data-page="cover">
+    <div class="bg-img" style="background-image:url('cover.jpg')"></div>
+    <div class="page-inner center">
+      <h1 class="cover-title serif">领养启事</h1>
+
+      <!-- 替换为四角星标记 -->
+      <svg class="star-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="var(--star-light)"/>
+        <path d="M12 5.5L13.6 10.4L18.5 12L13.6 13.6L12 18.5L10.4 13.6L5.5 12L10.4 10.4L12 5.5Z" fill="var(--star-mid)"/>
+      </svg>
+
+      <button class="open-btn" id="openBtn">
+        开启
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- 目录 -->
+  <section class="page" data-page="toc">
+    <div class="page-inner">
+      <p class="kicker">CONTENTS</p>
+      <h2 class="title" style="margin-bottom:30px;">目录导航</h2>
+      
+      <div class="toc-grid">
+        <div class="toc-item" onclick="goTo(2)">
+          <span class="toc-num">01</span><span class="toc-name">关于我</span><span class="toc-icon">→</span>
+        </div>
+        <div class="toc-item" onclick="goTo(3)">
+          <span class="toc-num">02</span><span class="toc-name">约会风格</span><span class="toc-icon">→</span>
+        </div>
+        <div class="toc-item" onclick="goTo(4)">
+          <span class="toc-num">03</span><span class="toc-name">罐罐钱价目表</span><span class="toc-icon">→</span>
+        </div>
+        <div class="toc-item" onclick="goTo(5)">
+          <span class="toc-num">04</span><span class="toc-name">领养条件</span><span class="toc-icon">→</span>
+        </div>
+        <div class="toc-item" onclick="goTo(6)">
+          <span class="toc-num">05</span><span class="toc-name">专属资料</span><span class="toc-icon">→</span>
+        </div>
+        <div class="toc-item" onclick="goTo(7)">
+          <span class="toc-num">06</span><span class="toc-name">约会前问卷</span><span class="toc-icon">→</span>
+        </div>
+        <div class="toc-item" onclick="goTo(8)">
+          <span class="toc-num">07</span><span class="toc-name">结语</span><span class="toc-icon">→</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 关于我 -->
+  <section class="page" data-page="profile">
+    <div class="page-inner">
+      <p class="kicker">01 · PROFILE</p>
+      <h2 class="title" style="text-align: center; margin-bottom: 24px;">关于我</h2>
+      
+      <div class="glass-panel profile-center">
+        <div class="avatar"><img src="avatar.jpg" alt="头像"></div>
+        <div class="profile-name serif">萧离</div>
+        
+        <div class="info-grid">
+          <div class="info-box"><span>年龄</span><strong>25</strong></div>
+          <div class="info-box"><span>星座</span><strong>射手</strong></div>
+          <div class="info-box"><span>属性</span><strong>Le-T</strong></div>
+          <div class="info-box"><span>MBTI</span><strong>INFJ</strong></div>
+          <div class="info-box full">
+            <span>常驻</span><strong>0号 / 阿努 / 虚荣</strong>
+          </div>
+        </div>
+
+        <div class="signature">
+          小猫的爱是牙印和抓痕，<br>我的妻子也是。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 约会风格 -->
+  <section class="page" data-page="style">
+    <div class="page-inner">
+      <p class="kicker">02 · STYLE</p>
+      <div class="style-header">
+        <img src="fish.png" alt="装饰">
+        <h2 class="title" style="margin-bottom: 0;">约会风格</h2>
+      </div>
+
+      <div class="glass-panel">
+        <div class="style-group">
+          <h4>主风格</h4>
+          <div class="style-chips">
+            <button type="button" class="chip">钓系引导</button>
+            <button type="button" class="chip">温柔年上</button>
+            <button type="button" class="chip">高恋日常</button>
+            <button type="button" class="chip">文艺</button>
+            <button type="button" class="chip">微单口</button>
+          </div>
+        </div>
+
+        <div class="style-group" style="margin-bottom:0;">
+          <h4>副风格</h4>
+          <div class="style-chips">
+            <button type="button" class="chip">恶趣味</button>
+            <button type="button" class="chip">白切黑</button>
+            <button type="button" class="chip">微擦</button>
+          </div>
+        </div>
+      </div>
+      <p class="subtitle" style="text-align: center;">风格会根据爱人的喜好与接受度随机调整</p>
+    </div>
+  </section>
+
+  <!-- 价目表 -->
+  <section class="page" data-page="price">
+    <div class="page-inner">
+      <p class="kicker">03 · PRICE</p>
+      <div class="price-header">
+        <img src="can.png" alt="装饰">
+        <h2 class="title" style="margin-bottom: 0;">罐罐钱价目表</h2>
+      </div>
+
+      <div class="hero-price-simple">
+        <div class="hps-line">
+          <span class="hps-num">38</span><span class="hps-unit">/ h</span>
+          <span class="hps-divider">·</span>
+          <span class="hps-num">22</span><span class="hps-unit">/ 半</span>
+        </div>
+      </div>
+
+      <div class="glass-panel">
+        <div class="fee-group" style="margin-top:0;">
+          <h4 class="fee-title">其他档位</h4>
+          <div class="fee-list-single">
+            <div class="fee-item-single">
+              <span>人设虚</span>
+              <b>40 / 时 · 24 / 半</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="fee-group">
+          <h4 class="fee-title">零食加餐</h4>
+          <div class="fee-list-single">
+            <div class="fee-item-single"><span>卡装扮</span><b>+4</b></div>
+            <div class="fee-item-single"><span>卡头牌</span><b>+6</b></div>
+            <div class="fee-item-single"><span>旁观一人</span><b>+10</b></div>
+          </div>
+        </div>
+
+        <div class="fee-group">
+          <h4 class="fee-title">深夜加餐费</h4>
+          <div class="fee-list-single">
+            <div class="fee-item-single"><span>凌晨 12:00 – 2:00</span><b>+3</b></div>
+            <div class="fee-item-single"><span>凌晨 2:00 – 4:00</span><b>+5</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 领养条件 -->
+  <section class="page" data-page="rules">
+    <div class="page-inner">
+      <p class="kicker">04 · RULES</p>
+      <h2 class="title">领养条件</h2>
+
+      <div class="glass-panel">
+        <ol class="rules-list" id="rulesList">
+          <li class="highlight">雷黄暴侮辱（雷雷雷）——敢侮辱我，永拒，谢谢你。</li>
+          <li>本人 Le，默认拒接男板。</li>
+          <li>硬压我、不尊重我、极度的抽象反骨不配合。</li>
+          <li>把我当纯下位、当狗。</li>
+          <li>全程反驳批判、当辩论赛——出现此状况我不适，有选择退单的权利；我是来给你爱的，不是让你贬低批判我的。</li>
+          <li>婉拒不配合 / 过于抽象 / 过于反骨的恋人。</li>
+          <li>如有不适，可以出简短建议或选择退单；禁止从头到尾将我评价贬低一遍来找存在感。</li>
+          <li class="highlight">10 分钟前不满意可随时结束约会；10 分钟后默认"爱我到结束前的最后一秒"，不接受无理由退换。</li>
+          <li>请确保约会只有我们两人，带人请提前告知。</li>
+          <li>为体验感更好，请提前告知雷点 / 喜点，踩雷概不负责。</li>
+          <li>风格根据爱人的喜好与接受度随机调整。</li>
+          <li>尊重与被爱，互动多，能够同频交流。</li>
+          <li>爱的体验感取决于您的配合程度。</li>
+          <li>会很温柔，喜欢快乐轻松的氛围；恋感和你，在我这里高于一切。</li>
+          <li>状态不适时，请给一点时间或耐心，因为你是好宝宝。</li>
+        </ol>
+        <p class="rules-foot" id="rulesFoot">下单默认已读并且同意单前须知</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 专属资料 (更新最新腾讯文档链接) -->
+  <section class="page" data-page="docs">
+    <div class="page-inner">
+      <p class="kicker">MATERIALS</p>
+      <h2 class="title">专属资料</h2>
+      <p class="subtitle">完整内容见文档</p>
+
+      <a class="doc-card" href="https://docs.qq.com/doc/DYUhWRVNnYm9GT1BY" target="_blank" rel="noopener">
+        <img src="folder.png" alt="完整资料">
+        <div class="doc-info">
+          <div class="doc-name">资料</div>
+          <div class="doc-desc">规则与资料汇总 · 见文档</div>
+        </div>
+        <span class="doc-link">查看 →</span>
+      </a>
+
+      <a class="doc-card" href="https://docs.qq.com/doc/DYXhScEpFTWZXdHRE" target="_blank" rel="noopener">
+        <img src="chat.png" alt="话术">
+        <div class="doc-info">
+          <div class="doc-name">话术</div>
+          <div class="doc-desc">精选话术 · 完整库见文档</div>
+        </div>
+        <span class="doc-link">查看 →</span>
+      </a>
+
+      <a class="doc-card" href="https://docs.qq.com/doc/DYXFrcUpPYVRRb2px" target="_blank" rel="noopener">
+        <img src="card.png" alt="小卡">
+        <div class="doc-info">
+          <div class="doc-name">小卡</div>
+          <div class="doc-desc">卡类风格 · 完整图鉴见文档</div>
+        </div>
+        <span class="doc-link">查看 →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 问卷 -->
+  <section class="page" data-page="form">
+    <div class="page-inner">
+      <p class="kicker">FORM</p>
+      <h2 class="title">约会前问卷</h2>
+      <p class="subtitle">全部选填</p>
+
+      <form id="orderForm" novalidate>
+        <label class="field">
+          <span class="flabel">老板称呼</span>
+          <input type="text" name="name">
+        </label>
+
+        <label class="field">
+          <span class="flabel">喜点</span>
+          <textarea name="like" rows="2"></textarea>
+        </label>
+
+        <label class="field">
+          <span class="flabel">雷点</span>
+          <textarea name="hate" rows="2"></textarea>
+        </label>
+
+        <div class="form-type" id="boardType">
+          <button type="button" data-type="抽象板">抽象板</button>
+          <button type="button" data-type="新手板">新手板</button>
+          <button type="button" data-type="同行">同行</button>
+        </div>
+
+        <label class="field">
+          <span class="flabel">备注</span>
+          <textarea name="remark" rows="2"></textarea>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="flabel">日期</span>
+            <input type="date" name="date">
+          </label>
+          <label class="field">
+            <span class="flabel">时段</span>
+            <input type="text" name="time">
+          </label>
+        </div>
+
+        <button class="btn-solid" type="submit">提交预约</button>
+        <p style="margin-top:16px; font-size:11px; color:var(--faint); text-align:center;">提交后直接送到萧离邮箱，无需打开自己的邮箱</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 尾页 (杂志排版) -->
+  <section class="page" data-page="end">
+    <div class="bg-img" style="background-image:url('end.jpg')"></div>
+    <div class="page-inner center">
+      <div class="end-box">
+        
+        <div class="end-text-wrap serif">
+          
+          <!-- 第一组：如果我有 两颗心 -->
+          <div class="end-row-1">
+            <span class="end-small-1">如果我有</span>
+            <span class="end-big-1">兩顆心</span>
+          </div>
+          <div class="end-en-1">If I had two hearts</div>
+          
+          <!-- 第二组：两次 我想和我会爱上你 -->
+          <div class="end-row-2">
+            <span class="end-big-2">兩次</span>
+            <span class="end-small-2">我想和我会爱上你</span>
+          </div>
+          <div class="end-en-2">I think I would fall for you twice</div>
+
+          <!-- 穿插的细线 -->
+          <svg class="end-swoosh" viewBox="0 0 300 40" fill="none">
+            <path d="M0,20 Q150,40 300,10" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+
+        </div>
+        
+        <button class="end-btn" id="backTop" style="margin-top: 30px;">返回首页</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="dock">
+  <button class="dock-reset" id="resetHome">返回开头</button>
+  <div class="dots" id="dots"></div>
+  <button class="dock-next" id="nextBtn" aria-label="下一页">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 5l7 7-7 7"/>
+    </svg>
+  </button>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var ORDER_ENDPOINT = 'https://formsubmit.co/ajax/2436313514@qq.com';
+
+  /* 主题切换 */
+  var themeToggle = document.getElementById('themeToggle');
+  var currentTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+
+  themeToggle.addEventListener('click', function() {
+    var nextTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    var metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', nextTheme === 'dark' ? '#1B2530' : '#CFE8F3');
+  });
+
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var pos = 0;
+  var animating = false;
+  var dotsBox = document.getElementById('dots');
+  var nextBtn = document.getElementById('nextBtn');
+  var toast = document.getElementById('toast');
+  var toastTimer;
+  var revealTimers = [];
+  var bgm = document.getElementById('bgm');
+
+  function clearRevealTimers() { revealTimers.forEach(clearTimeout); revealTimers = []; }
+
+  function goTo(newPos) {
+    if (animating || newPos < 0 || newPos >= pages.length) return;
+    animating = true;
+    pages[pos].classList.remove('active');
+    pos = newPos;
+    pages[pos].classList.add('active');
+    renderDots();
+    updateNextBtn();
+    revealPage(pages[pos]);
+    setTimeout(function(){ animating = false; }, 720);
+  }
+  function next() { goTo(pos + 1); }
+
+  function revealPage(pageEl) {
+    clearRevealTimers();
+    var items = pageEl.querySelectorAll('.rules-list li, .doc-card');
+    var foot = pageEl.querySelector('.rules-foot');
+    Array.prototype.forEach.call(items, function(el, i) {
+      el.classList.remove('show');
+      revealTimers.push(setTimeout(function() { el.classList.add('show'); }, 200 + i * 150));
+    });
+    if (foot) {
+      foot.classList.remove('show');
+      revealTimers.push(setTimeout(function() { foot.classList.add('show'); }, 200 + items.length * 150 + 150));
+    }
+  }
+
+  function renderDots() {
+    if (dotsBox.childElementCount !== pages.length) {
+      dotsBox.innerHTML = '';
+      pages.forEach(function(_, i) {
+        var b = document.createElement('button');
+        b.className = 'dot'; b.type = 'button';
+        b.addEventListener('click', function(){ goTo(i); });
+        dotsBox.appendChild(b);
+      });
+    }
+    Array.prototype.forEach.call(dotsBox.children, function(d, i) { d.classList.toggle('on', i === pos); });
+  }
+  function updateNextBtn() { nextBtn.classList.toggle('hide', pos >= pages.length - 1); }
+
+  nextBtn.addEventListener('click', next);
+
+  document.addEventListener('click', function(e) {
+    var y = e.clientY, h = window.innerHeight;
+    if (y > h * 0.8 && !e.target.closest('button') && !e.target.closest('a') && !e.target.closest('input') && !e.target.closest('textarea') && !e.target.closest('.toc-item')) {
+      next();
+    }
+  });
+
+  document.getElementById('openBtn').addEventListener('click', function() {
+    if(bgm) bgm.play().catch(function(err){ console.log('音乐需在同目录命名为bgm.mp3'); });
+    goTo(1); 
+  });
+
+  document.getElementById('resetHome').addEventListener('click', function(){ goTo(0); });
+  document.getElementById('backTop').addEventListener('click', function(){ goTo(0); });
+
+  /* 全屏四角星点击特效 */
+  document.addEventListener('pointerdown', function(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    var star = document.createElement('div');
+    star.className = 'click-star';
+    star.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="#C4E0F5"/><path d="M12 5.5L13.6 10.4L18.5 12L13.6 13.6L12 18.5L10.4 13.6L5.5 12L10.4 10.4L12 5.5Z" fill="#A8CAE8"/></svg>`;
+    
+    star.style.left = e.clientX + 'px';
+    star.style.top = e.clientY + 'px';
+    document.body.appendChild(star);
+    
+    setTimeout(() => { star.remove(); }, 600);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.style-chips .chip'), function(chip) {
+    chip.addEventListener('click', function() {
+      chip.classList.add('tap');
+      setTimeout(function(){ chip.classList.remove('tap'); }, 220);
+    });
+  });
+
+  var typeBtns = document.querySelectorAll('#boardType button');
+  Array.prototype.forEach.call(typeBtns, function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.classList.contains('on')) { btn.classList.remove('on'); } 
+      else { Array.prototype.forEach.call(typeBtns, function(b){ b.classList.remove('on'); }); btn.classList.add('on'); }
+    });
+  });
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2000);
+  }
+
+  document.getElementById('orderForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var name = (form.name.value || '').trim();
+    var like = (form.like.value || '').trim();
+    var hate = (form.hate.value || '').trim();
+    var remark = (form.remark.value || '').trim();
+    var date = (form.date.value || '').trim();
+    var time = (form.time.value || '').trim();
+    var type = '';
+    var activeType = document.querySelector('#boardType button.on');
+    if (activeType) type = activeType.dataset.type;
+
+    var lines = [
+      '板型：' + (type || '—'),
+      '老板称呼：' + (name || '—'),
+      '喜点：' + (like || '—'),
+      '雷点：' + (hate || '—'),
+      '备注：' + (remark || '—'),
+      '日期：' + (date || '—'),
+      '时段：' + (time || '—')
+    ];
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerText = '提交中…';
+
+    fetch(ORDER_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        name: name || '匿名板板',
+        message: lines.join('\n'),
+        _subject: '萧离 · 约单预约'
+      })
+    }).then(function(r) {
+      return r.json();
+    }).then(function(d) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = '提交预约';
+      if (d && (d.success === true || d.success === 'true')) {
+        showToast('已送达');
+        form.reset();
+      } else {
+        showToast('送达失败');
+      }
+    }).catch(function() {
+      submitBtn.disabled = false;
+      submitBtn.innerText = '提交预约';
+      showToast('送达失败');
+    });
+  });
+
+  renderDots();
+  updateNextBtn();
+</script>
+</body>
+</html>
